@@ -50,17 +50,17 @@ class CRM_Ocrimporter_Test extends \PHPUnit_Framework_TestCase implements Headle
    */
   private $files = array(
     array(
-      'file' => 'OCR.D250913',
+      'file' => 'OCR.D200116',
       'should_succeed' => true,
       'message' => 'The file should succeeed.',
       'test_transactions' => true,
-      'transaction_count' => 106,
+      'transaction_count' => 20,
       'transactions_to_test' => array(
         array(
           'assignment_number' => 1,
           'transaction_number' => 1,
-          'expected_amount_in_ore' => 25000,
-          'expected_bank_account' => '42901241761',
+          'expected_amount_in_ore' => 102000,
+          'expected_bank_account' => '99990512341',
           'create_contact' => array(
             'first_name' => 'Stephan',
             'last_name' => 'Moss',
@@ -69,76 +69,50 @@ class CRM_Ocrimporter_Test extends \PHPUnit_Framework_TestCase implements Headle
         ),
         array(
           'assignment_number' => 1,
-          'transaction_number' => 13,
-          'expected_amount_in_ore' => 35000,
-          'expected_kid' => '005355441',
+          'transaction_number' => 6,
+          'expected_amount_in_ore' => 56000,
+          'expected_kid' => '0165867',
         ),
         array(
           'assignment_number' => 1,
-          'transaction_number' => 71,
-          'expected_bank_account' => '65661015254',
+          'transaction_number' => 8,
+          'expected_bank_account' => '99999545528',
         ),
-        array(
-          'assignment_number' => 1,
-          'transaction_number' => 77,
-          'expected_bank_account' => '97415309973',
-          'create_contact' => array(
-            'first_name' => 'Alexander',
-            'last_name' => 'Hansen',
-            'contact_type' => 'Individual',
-          ),
-        )
       )
     ),
 
     array(
-      'file' => 'OCR.D260913',
-      'should_succeed' => true,
-      'message' => 'The file should succeeed.',
-      'test_transactions' => true,
-      'transaction_count' => 53,
-    ),
-
-    array(
-      'file' => 'OCR.D270913',
-      'should_succeed' => true,
-      'message' => 'The file should succeeed.',
-      'test_transactions' => true,
-      'transaction_count' => 52,
-    ),
-
-    array(
-      'file' => 'OCR.D250913.wrongamountofrecords.fails',
+      'file' => 'OCR.D200116.wrongamountofrecords.fails',
       'should_succeed' => false,
       'message' => 'The file should fail because of the wrong number of records in the file.',
     ),
 
     array(
-      'file' => 'OCR.D250913.wrongamountofassignmentrecords.fails',
+      'file' => 'OCR.D200116.wrongamountofassignmentrecords.fails',
       'should_succeed' => false,
       'message' => 'The file should have failed because of the wrong number of records in the assignment.',
     ),
 
     array(
-      'file' => 'OCR.D250913.wrongtotalamount.fails',
+      'file' => 'OCR.D200116.wrongtotalamount.fails',
       'should_succeed' => false,
       'message' => 'The file should have failed because of the wrong total amount in ore in the file',
     ),
 
     array(
-      'file' => 'OCR.D250913.wrongtotalamountassignment.fails',
+      'file' => 'OCR.D200116.wrongtotalamountassignment.fails',
       'should_succeed' => false,
       'message' => 'The file should have failed because of the wrong total amount in ore in the assignment section of the file',
     ),
 
     array(
-      'file' => 'OCR.D250913.noendrecord.fails',
+      'file' => 'OCR.D200116.noendrecord.fails',
       'should_succeed' => false,
       'message' => 'The file does not have an end transmission record',
     ),
 
     array(
-      'file' => 'OCR.D250913.randomtextfile.fails',
+      'file' => 'OCR.D200116.randomtextfile.fails',
       'should_succeed' => false,
       'message' => 'The file is a random text file and does not contain any OCR information.'
     )

@@ -11,6 +11,12 @@
 class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Importer {
 
   /**
+   * @var array
+   *  Array of assignments ordered by filename of the imported file.
+   */
+  private $assignments = array();
+
+  /**
    * Report if the plugin is capable of importing files
    *
    * @return bool
@@ -69,8 +75,14 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
       }
       elseif ($record instanceof CRM_Ocrimporter_Record_EndTransmission) {
         $endTransmission = $record;
+        if ($startTransmission) {
+          $startTransmission->setEndTransmissionRecord($endTransmission);
+        }
       }
       elseif ($record instanceof CRM_Ocrimporter_Record_StartAssignment) {
+        if ($startTransmission) {
+          $record->setStartTransmissionRecord($startTransmission);
+        }
         $assignments[] = $record;
         $startAssignment = $record;
         $linesInAssignment = 1;
@@ -94,10 +106,12 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
         }
 
         $doesContainAFullAssignment = true;
+        $startAssignment->setEndAssignmentRecord($record);
       } elseif ($record instanceof CRM_Ocrimporter_Record_AmountItem1) {
         if ($startAssignment) {
           $startAssignment->addTransaction($record);
         }
+        $amountItem1 = $record;
       } elseif ($record instanceof CRM_Ocrimporter_Record_AmountItem2 && $amountItem1) {
         $record->setAmountItem1($amountItem1);
         $amountItem1->setAmountItem2($record);
@@ -108,6 +122,10 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
         if ($startAssignment) {
           $startAssignment->addTransaction($record);
         }
+      }
+
+      if ($record instanceof CRM_Ocrimporter_Record_Transaction && $startAssignment) {
+        $record->setStartAssignmentRecord($startAssignment);
       }
     }
     fclose($file);
@@ -161,22 +179,37 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
 
     // now create <$count> entries
     foreach($assignments as $assignment) {
+      $batchReference = '';
+      if ($assignment->getStartTransmissionRecord()) {
+        $batchReference = $assignment->getStartTransmissionRecord()->getTransmissionNumber().'-'.$assignment->getAssignmentNumber();
+      }
+
       // create batch
       $this->openTransactionBatch();
+      $ba_id = $this->getBankAccountId($assignment->getAssignmentAccount(), true);
+      $this->_current_transaction_batch->reference = $batchReference;
+      $this->_current_transaction_batch_attributes['references'] = $batchReference;
 
       $transactions = $assignment->getTransactions();
-      for($i=0; $i<count($transactions); $i++) {
-        $transaction = $transactions[$i];
-
+      $i=1;
+      foreach($transactions as $transaction) {
         if ($transaction instanceof CRM_Ocrimporter_Record_AmountItem1) {
           $amountInOre = $transaction->getTransactionAmount();
           $amountInNRK = ($amountInOre === 0 ? 0.00 : ($amountInOre / 100));
-
+          $parity_ba_id = '';
+          if ($transaction->getAmountItem2()) {
+            $debitorAccount = $transaction->getAmountItem2()->getDebitAccount();
+            // Convert debitor account into bank account id when bank account already exist in the system.
+            $debitorAccount = $this->getBankAccountId($debitorAccount, false);
+            if ($debitorAccount) {
+              $parity_ba_id = $debitorAccount;
+            }
+          }
 
           $btx = array(
             'version' => 3,
             'amount' => $amountInNRK,
-            'bank_reference' => $transaction->getKid(),
+            'bank_reference' => $batchReference.'-'.$transaction->getKid(),
             'value_date' => $transaction->getNetsDate()->format('YmdHis'),
             'booking_date' => $transaction->getNetsDate()->format('YmdHis'),
             'currency' => 'NRK',
@@ -184,15 +217,40 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
             'status_id' => 0, // @TODO lookup the contribution status id
             'data_raw' => $transaction->getRawData(),
             'data_parsed' => json_encode($transaction->getParsedData()),
-            'ba_id' => '',
-            'party_ba_id' => '',
+            'ba_id' => $ba_id,
+            'party_ba_id' => $parity_ba_id,
             'tx_batch_id' => NULL,
-            'sequence' => $i,
+            'sequence' => $transaction->getTransactionNumber(),
           );
 
           // and finally write it into the DB
-          $duplicate = $this->checkAndStoreBTX($btx, ($i / $transactionCount), $params);
+          $this->checkAndStoreBTX($btx, $i / $transactionCount, $params);
+        } elseif ($transaction instanceof CRM_Ocrimporter_Record_StandingOrder) {
+          $date = '';
+          if ($assignment->getStarttransmissionRecord()->getEndTransmissionRecord()) {
+            $date = $assignment->getStarttransmissionRecord()->getEndTransmissionRecord()->getNetsDate()->format('YmdHis');
+          }
+          $btx = array(
+            'version' => 3,
+            'amount' => 0,
+            'bank_reference' => $batchReference.'-'.$transaction->getKid(),
+            'value_date' => $date,
+            'booking_date' => $date,
+            'currency' => 'NRK',
+            'type_id' => 0, // @TODO lookup the financial type id
+            'status_id' => 0, // @TODO lookup the contribution status id
+            'data_raw' => $transaction->getRawData(),
+            'data_parsed' => json_encode($transaction->getParsedData()),
+            'ba_id' => $ba_id,
+            'party_ba_id' => '',
+            'tx_batch_id' => NULL,
+            'sequence' => $transaction->getTransactionNumber(),
+          );
+
+          // and finally write it into the DB
+          $this->checkAndStoreBTX($btx, $i / $transactionCount, $params);
         }
+        $i++;
       }
       $this->closeTransactionBatch();
     }
@@ -202,10 +260,51 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
   }
 
   /**
+   * Try to find a bank account if $createNewOne is set to true a new Bank Account is created
+   * for contact with ID 1 (Default organisation)
+   *
+   * @ToDo Make the default organisation configurable
+   *
+   * @param $bank_account
+   * @param bool $createNewOne
+   * @return array
+   */
+  private function getBankAccountId($bank_account, $createNewOne=false) {
+    try {
+      $ba_id = civicrm_api3('BankingAccountReference', 'getvalue', array('return' => 'ba_id', 'reference' => $bank_account));
+      return $ba_id;
+    } catch (Exception $e) {
+      // Do nothing
+    }
+
+    if ($createNewOne) {
+      $ba_params['contact_id'] = 1; // Default Organisation
+      $ba_params['data_parsed'] = json_encode(array(
+        'name' => $bank_account
+      ));
+      $ba_params['data_raw'] = $bank_account;
+      $ba_params['description'] = $bank_account;
+      $result = civicrm_api3('BankingAccount', 'create', $ba_params);
+
+      $ba_ref_params['ba_id'] = $result['id'];
+      $ba_ref_params['reference'] = $bank_account;
+      $ba_ref_params['reference_type_id'] = civicrm_api3('OptionValue', 'getvalue', array(
+        'return' => 'id',
+        'name' => 'ocr',
+        'option_group_id' => 'civicrm_banking.reference_types'
+      ));
+      civicrm_api3('BankingAccountReference', 'create', $ba_ref_params);
+      return $result['id'];
+    }
+
+    return false;
+  }
+
+  /**
    * Test if the configured source is available and ready
    *
    * @var
-   * @return TODO: data format?
+   * @return bool
    */
   function probe_stream($params) {
     return false;
@@ -214,10 +313,19 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
   /**
    * Import from the configured source
    *
-   * @return TODO: data format?
+   * @return bool
    */
   function import_stream($params) {
     return false;
+  }
+
+  /**
+   * Returns an array of CRM_Ocrimporter_Record_StartAssignments for a certain file.
+   * @param $file_path
+   * @return mixed
+   */
+  public function getAssignments($file_path) {
+    return $this->assignments[$file_path];
   }
 
 }

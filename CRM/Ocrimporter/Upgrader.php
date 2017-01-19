@@ -44,6 +44,14 @@ class CRM_Ocrimporter_Upgrader extends CRM_Ocrimporter_Upgrader_Base {
     $params['name'] = 'OCR Importer';
     $params['enabled'] = 1;
     civicrm_api3('BankingPluginInstance', 'create', $params);
+
+    // Add the OCR bank account type
+    civicrm_api3('OptionValue', 'create', array(
+      'option_group_id' => 'civicrm_banking.reference_types',
+      'name' => 'ocr',
+      'label' => 'Bank account numbers in OCR',
+      'value' => 'NOR_OCR',
+    ));
   }
 
   /**

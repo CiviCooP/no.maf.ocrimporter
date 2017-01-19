@@ -14,6 +14,18 @@ class CRM_Ocrimporter_Record_StartAssignment extends CRM_Ocrimporter_Record {
 
   private $transactions = array();
 
+  /**
+   * @var CRM_Ocrimporter_Record_EndAssignment
+   *  The end assignment record belonging to this start transaction.
+   */
+  private $endAssignmentRecord = false;
+
+  /**
+   * @var CRM_Ocrimporter_Record_StartTransmission
+   *  The start transmission record
+   */
+  private $startTransmissionRecord = false;
+
   public function __construct($line) {
     parent::__construct($line);
 
@@ -27,15 +39,31 @@ class CRM_Ocrimporter_Record_StartAssignment extends CRM_Ocrimporter_Record {
   }
 
   public function getAssignmentNumber() {
-    return $this->getAssignmentNumber();
+    return $this->assignmentNumber;
   }
 
   public function getAssignmentAccount() {
-    return $this->getAssignmentAccount();
+    return $this->assignmentAccount;
+  }
+
+  public function setEndAssignmentRecord(CRM_Ocrimporter_Record_EndAssignment $record) {
+    $this->endAssignmentRecord = $record;
+  }
+
+  public function getEndAssignmentRecord() {
+    return $this->endAssignmentRecord;
+  }
+
+  public function setStartTransmissionRecord(CRM_Ocrimporter_Record_StartTransmission $record) {
+    $this->startTransmissionRecord = $record;
+  }
+
+  public function getStartTransmissionRecord() {
+    return $this->startTransmissionRecord;
   }
 
   public function addTransaction(CRM_Ocrimporter_Record_Transaction $transaction) {
-    $this->transactions[] = $transaction;
+    $this->transactions[$transaction->getTransactionNumber()] = $transaction;
   }
 
   public function getTransactions() {
@@ -49,8 +77,8 @@ class CRM_Ocrimporter_Record_StartAssignment extends CRM_Ocrimporter_Record {
    */
   public function getTotalTransactionAmount() {
     $total = 0;
-    for($i=0; $i < count($this->transactions); $i++) {
-      $total += $this->transactions[$i]->getTransactionAmount();
+    foreach($this->transactions as $transaction) {
+      $total += $transaction->getTransactionAmount();
     }
     return $total;
   }

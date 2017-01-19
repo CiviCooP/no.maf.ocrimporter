@@ -16,7 +16,7 @@ class CRM_Ocrimporter_Record {
 
   public function __construct($line) {
     $this->recordType = substr($line, 6, 2);
-    $this->recordLine = $line;
+    $this->recordLine = str_replace(array("\r", "\n"), "", $line);
   }
 
   /**

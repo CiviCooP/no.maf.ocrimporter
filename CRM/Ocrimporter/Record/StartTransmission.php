@@ -10,6 +10,12 @@ class CRM_Ocrimporter_Record_StartTransmission extends CRM_Ocrimporter_Record {
 
   private $dataRecipient;
 
+  /**
+   * @var CRM_Ocrimporter_Record_StartTransmission
+   *  The end transmission record for this start transmission.
+   */
+  private $endTransmissionRecord;
+
   public function __construct($line) {
     parent::__construct($line);
     $this->transmissionNumber = substr($line, 16, 7);
@@ -22,6 +28,14 @@ class CRM_Ocrimporter_Record_StartTransmission extends CRM_Ocrimporter_Record {
 
   public function getDataRecipient() {
     return $this->dataRecipient;
+  }
+
+  public function setEndTransmissionRecord(CRM_Ocrimporter_Record_EndTransmission $endTransmissionRecord) {
+    $this->endTransmissionRecord = $endTransmissionRecord;
+  }
+
+  public function getEndTransmissionRecord() {
+    return $this->endTransmissionRecord;
   }
 
 }

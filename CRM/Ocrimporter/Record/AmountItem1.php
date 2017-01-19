@@ -30,6 +30,11 @@ class CRM_Ocrimporter_Record_AmountItem1 extends CRM_Ocrimporter_Record implemen
    */
   private $amountItem3 = false;
 
+  /**
+   * @var CRM_Ocrimporter_Record_StartAssignment
+   */
+  private $startAssignmentRecord;
+
   public function __construct($line) {
     parent::__construct($line);
 
@@ -43,7 +48,7 @@ class CRM_Ocrimporter_Record_AmountItem1 extends CRM_Ocrimporter_Record implemen
     $this->sign = substr($line,31 ,1);
     $this->amount = (int) substr($line,32 ,17);
     $this->signedAmount = (int) substr($line, 31, 18);
-    $this->kid = substr($line, 49, 25);
+    $this->kid = ltrim(substr($line, 49, 25));
   }
 
   public function getRawData() {
@@ -176,6 +181,23 @@ class CRM_Ocrimporter_Record_AmountItem1 extends CRM_Ocrimporter_Record implemen
 
   public function getAmountItem3() {
     return $this->amountItem3;
+  }
+
+  /**
+   * @return CRM_Ocrimporter_Record_StartAssignment
+   */
+  public function getStartAssignmentRecord() {
+    return $this->startAssignmentRecord;
+  }
+
+  /**
+   * Sets the start assignment record.
+   *
+   * @param \CRM_Ocrimporter_Record_StartAssignment $record
+   * @return mixed
+   */
+  public function setStartAssignmentRecord(CRM_Ocrimporter_Record_StartAssignment $record) {
+    $this->startAssignmentRecord = $record;
   }
 
 }

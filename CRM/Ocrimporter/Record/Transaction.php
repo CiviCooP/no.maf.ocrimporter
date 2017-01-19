@@ -29,4 +29,22 @@ interface CRM_Ocrimporter_Record_Transaction {
    */
   public function getRawData();
 
+  /**
+   * @return int the number of the current transaction.
+   */
+  public function getTransactionNumber();
+
+  /**
+   * @return CRM_Ocrimporter_Record_StartAssignment
+   */
+  public function getStartAssignmentRecord();
+
+  /**
+   * Sets the start assignment record.
+   *
+   * @param \CRM_Ocrimporter_Record_StartAssignment $record
+   * @return mixed
+   */
+  public function setStartAssignmentRecord(CRM_Ocrimporter_Record_StartAssignment $record);
+
 }

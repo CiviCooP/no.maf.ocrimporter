@@ -49,7 +49,7 @@ class CRM_Ocrimporter_Upgrader extends CRM_Ocrimporter_Upgrader_Base {
     civicrm_api3('OptionValue', 'create', array(
       'option_group_id' => 'civicrm_banking.reference_types',
       'name' => 'ocr',
-      'label' => 'Bank account numbers in OCR',
+      'label' => 'Norwegian Bank Account',
       'value' => 'NOR_OCR',
     ));
   }

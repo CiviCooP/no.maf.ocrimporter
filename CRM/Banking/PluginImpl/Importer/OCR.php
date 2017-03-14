@@ -212,7 +212,7 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
             'bank_reference' => $batchReference.'-'.$transaction->getKid(),
             'value_date' => $transaction->getNetsDate()->format('YmdHis'),
             'booking_date' => $transaction->getNetsDate()->format('YmdHis'),
-            'currency' => 'NRK',
+            'currency' => 'NOK',
             'type_id' => 0, // @TODO lookup the financial type id
             'status_id' => 0, // @TODO lookup the contribution status id
             'data_raw' => $transaction->getRawData(),
@@ -236,7 +236,7 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
             'bank_reference' => $batchReference.'-'.$transaction->getKid(),
             'value_date' => $date,
             'booking_date' => $date,
-            'currency' => 'NRK',
+            'currency' => 'NOK',
             'type_id' => 0, // @TODO lookup the financial type id
             'status_id' => 0, // @TODO lookup the contribution status id
             'data_raw' => $transaction->getRawData(),

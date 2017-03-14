@@ -94,10 +94,12 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
         }
 
         if ($endAssignment->getNumberOfRecords() != $linesInAssignment) {
+          CRM_Core_Session::setStatus('Expected '.$endAssignment->getNumberOfRecords().' records got '.$linesInAssignment);
           return false;
         }
 
         if ($endAssignment->getNumberOfTransactions() != count($startAssignment->getTransactions())) {
+          CRM_Core_Session::setStatus('Expected '.$endAssignment->getNumberOfTransactions().' transaction in assigment got '.count($startAssignment->getTransactions()));
           return false;
         }
 
@@ -142,10 +144,12 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
       return false;
     }
     if ($endTransmission->getNumberOfRecords() != $lineNumber) {
+      CRM_Core_Session::setStatus('Expected '.$endTransmission->getNumberOfRecords().' records got '.$lineNumber);
       return false;
     }
 
     if ($endTransmission->getNumberOfTransactions() != $transactionCount) {
+      CRM_Core_Session::setStatus('Expected '.$endTransmission->getNumberOfTransactions().' transactions got '.$transactionCount);
       return false;
     }
     if ($endTransmission->getTotalAmount() != $transmissionTotalAmount) {

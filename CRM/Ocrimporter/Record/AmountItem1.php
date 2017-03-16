@@ -68,7 +68,7 @@ class CRM_Ocrimporter_Record_AmountItem1 extends CRM_Ocrimporter_Record implemen
    * @return array
    */
   public function getParsedData() {
-    $data = array();
+    $data = parent::getParsedData();
     $data['transactionType'] = $this->transactionType;
     $data['transactionNumber'] = $this->transactionNumber;
     $data['netsDate'] = $this->netsDate;

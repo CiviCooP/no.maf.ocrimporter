@@ -24,7 +24,7 @@ class CRM_Ocrimporter_Record_StandingOrder extends CRM_Ocrimporter_Record implem
     parent::__construct($line);
     $this->transactionNumber = (int) substr($line, 8, 7);
     $this->registrationType = (int) substr($line, 15, 1);
-    $this->kid = substr($line, 16 ,25);
+    $this->kid = ltrim(substr($line, 16 ,25));
     $this->wantsNotification = substr($line, 41, 1);
 
   }
@@ -44,7 +44,7 @@ class CRM_Ocrimporter_Record_StandingOrder extends CRM_Ocrimporter_Record implem
    * @return array
    */
   public function getParsedData() {
-    $data = array();
+    $data = parent::getParsedData();
     $data['transaction_number'] = $this->transactionNumber;
     $data['registrationType'] = $this->registrationType;
     $data['registrationTypeExplanation'] = $this->getRegistrationExplanation();
@@ -68,13 +68,13 @@ class CRM_Ocrimporter_Record_StandingOrder extends CRM_Ocrimporter_Record implem
   public function getRegistrationExplanation() {
     switch ($this->registrationType) {
       case 0:
-        return 'Alle faste betalingsoppdrag tilknyttet betalingsmottakers avtale';
+        return 'Alle faste betalingsoppdrag tilknyttet betalingsmottakers avtale'; // Dutch (google translate): Alle betaaalopdrachten in verband overeenkomst begunstigde
         break;
       case 1:
-        return 'Nye /endrede faste betalingsoppdrag';
+        return 'Nye /endrede faste betalingsoppdrag'; //Dutch (google translate): Nieuwe / gewijzigde betaalopdracht
         break;
       case 2:
-        return 'Slettede faste betalingsoppdrag';
+        return 'Slettede faste betalingsoppdrag'; // Dutch (google translate): Verwijderde vaste betalingsoppdrag
         break;
     }
     return '';

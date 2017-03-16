@@ -19,6 +19,23 @@ class CRM_Ocrimporter_Record {
     $this->recordLine = str_replace(array("\r", "\n"), "", $line);
   }
 
+  public function getRecordName() {
+    $className = get_class($this);
+    return str_replace("CRM_Ocrimporter_Record_", "", $className);
+  }
+
+  /**
+   * Returns an array with all the parsed data.
+   *
+   * @return array
+   */
+  public function getParsedData() {
+    $data = array();
+    $data['recordType'] = $this->recordType;
+    $data['recordName'] = $this->getRecordName();
+    return $data;
+  }
+
   /**
    * Gets a record
    *

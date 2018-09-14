@@ -213,7 +213,7 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
           $btx = array(
             'version' => 3,
             'amount' => $amountInNRK,
-            'bank_reference' => $batchReference.'-'.$transaction->getKid(),
+            'bank_reference' => $batchReference.'-'.$transaction->getKid().'-'.$transaction->getTransactionNumber(),
             'value_date' => $transaction->getNetsDate()->format('YmdHis'),
             'booking_date' => $transaction->getNetsDate()->format('YmdHis'),
             'currency' => 'NOK',
@@ -237,7 +237,7 @@ class CRM_Banking_PluginImpl_Importer_OCR extends CRM_Banking_PluginModel_Import
           $btx = array(
             'version' => 3,
             'amount' => 0,
-            'bank_reference' => $batchReference.'-'.$transaction->getKid(),
+            'bank_reference' => $batchReference.'-'.$transaction->getKid().'-'.$transaction->getTransactionNumber(),
             'value_date' => $date,
             'booking_date' => $date,
             'currency' => 'NOK',
